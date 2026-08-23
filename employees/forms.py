@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.models import User
 from .models import Employee, Department, Position, EmployeeDocument
 
 
@@ -28,6 +29,27 @@ class PositionForm(forms.ModelForm):
 
 
 class EmployeeForm(forms.ModelForm):
+    # Champs optionnels pour créer le compte utilisateur Django
+    create_user_account = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Créer un compte d'accès web pour ce collaborateur",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    account_password = forms.CharField(
+        required=False,
+        label="Mot de passe initial",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control', 
+            'placeholder': 'Laissez vide pour mot de passe par défaut (ex: TempPass2026!)'
+        })
+    )
+    is_admin_user = forms.BooleanField(
+        required=False,
+        label="Accès Administrateur / RH (Staff)",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
     class Meta:
         model = Employee
         fields = [
@@ -100,6 +122,33 @@ class EmployeeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['registration_number'].required = False
+        if self.instance and self.instance.pk and self.instance.user:
+            self.fields['create_user_account'].initial = True
+            self.fields['is_admin_user'].initial = self.instance.user.is_staff
+
+
+class EmployeeUserAccountForm(forms.Form):
+    """Formulaire pour créer ou modifier l'accès utilisateur depuis la fiche détail."""
+    username = forms.CharField(
+        label="Nom d'utilisateur (Username)",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ex: jean.dupont'})
+    )
+    password = forms.CharField(
+        label="Nouveau Mot de Passe",
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Mot de passe sécurisé'}),
+        required=False
+    )
+    is_active = forms.BooleanField(
+        label="Compte actif (autoriser la connexion)",
+        required=False,
+        initial=True,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    is_staff = forms.BooleanField(
+        label="Droits d'administration RH (Staff)",
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
 
 
 class EmployeeDocumentForm(forms.ModelForm):

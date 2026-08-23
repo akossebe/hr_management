@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+
+{% block title %}Mon Espace Collaborateur - HR Pulse{% endblock %}
+{% block header_title %}Espace Collaborateur{% endblock %}
+
+{% block content %}
+<!-- Employee Welcome Banner -->
+<div class="p-4 rounded-4 shadow-sm mb-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);">
+    <div class="row align-items-center g-4">
+        <div class="col-auto">
+            {% if employee.photo %}
+                <img src="{{ employee.photo.url }}" class="rounded-circle border border-3 border-white shadow" style="width: 84px; height: 84px; object-fit: cover;">
+            {% else %}
+                <div class="rounded-circle border border-3 border-white shadow d-flex align-items-center justify-content-center bg-primary text-white fw-bold" style="width: 84px; height: 84px; font-size: 1.8rem;">
+                    {{ employee.first_name|first }}{{ employee.last_name|first }}
+                </div>
+            {% endif %}
+        </div>
+        <div class="col">
+            <div class="d-flex align-items-center gap-3 flex-wrap mb-1">
+                <h3 class="fw-bold m-0 text-white">Bonjour, {{ employee.first_name }} ! 👋</h3>
+                <span class="badge bg-white text-dark font-monospace fs-7 px-3 py-1">{{ employee.registration_number }}</span>
+                <span class="badge bg-success-subtle text-success px-3 py-1 fs-7">Connecté</span>
+            </div>
+            <p class="fs-6 text-white-50 mb-0">
+                <i class="fa-solid fa-briefcase me-1"></i> {{ employee.position.title|default:"Collaborateur" }} 
+                {% if employee.department %} &bull; {{ employee.department.name }}{% endif %}
+            </p>
+        </div>
+        <div class="col-12 col-md-auto">
+            <a href="{% url 'employee_detail' employee.pk %}" class="btn btn-light fw-semibold shadow-sm">
+                <i class="fa-solid fa-id-card me-1 text-primary"></i> Mon Profil & Badge
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Attendance Punch Card & Metrics -->
+<div class="row g-4 mb-4">
+    <!-- Pointage Express -->
+    <div class="col-12 col-lg-6">
+        <div class="custom-card p-4 h-100 border-start border-4 border-primary">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark m-0">
+                    <i class="fa-solid fa-clock text-primary me-2"></i> Pointage du Jour &bull; {{ today|date:"l d F Y" }}
+                </h6>
+                {% if today_attendance %}
+                    <span class="badge bg-success-subtle text-success"><i class="fa-solid fa-check me-1"></i>Enregistré</span>
+                {% else %}
+                    <span class="badge bg-warning-subtle text-warning"><i class="fa-solid fa-clock me-1"></i>En attente</span>
+                {% endif %}
+            </div>
+
+            <div class="row g-3 text-center mb-3">
+                <div class="col-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <span class="fs-8 text-muted d-block mb-1">Arrivée</span>
+                        <strong class="fs-5 text-dark font-monospace">
+                            {{ today_attendance.time_in|time:"H:i"|default:"--:--" }}
+                        </strong>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <span class="fs-8 text-muted d-block mb-1">Départ</span>
+                        <strong class="fs-5 text-dark font-monospace">
+                            {{ today_attendance.time_out|time:"H:i"|default:"--:--" }}
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <form method="POST" action="{% url 'quick_attendance_punch' %}">
+                {% csrf_token %}
+                {% if not today_attendance %}
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
+                        <i class="fa-solid fa-right-to-bracket me-2"></i> Pointer mon Arrivée
+                    </button>
+                {% elif not today_attendance.time_out %}
+                    <button type="submit" class="btn btn-warning w-100 py-2 fw-semibold shadow-sm text-dark">
+                        <i class="fa-solid fa-right-from-bracket me-2"></i> Pointer mon Départ
+                    </button>
+                {% else %}
+                    <button type="button" class="btn btn-outline-secondary w-100 py-2" disabled>
+                        <i class="fa-solid fa-circle-check me-2 text-success"></i> Pointages complets pour aujourd'hui
+                    </button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Stats & Actions -->
+    <div class="col-12 col-lg-6">
+        <div class="row g-3 h-100">
+            <div class="col-6">
+                <div class="custom-card p-3 h-100 d-flex flex-column justify-content-between">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <div class="rounded-3 bg-primary-subtle text-primary p-2 fs-5">
+                            <i class="fa-solid fa-plane-departure"></i>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold text-dark">{{ my_leaves|length }}</div>
+                            <div class="text-muted fs-8">Demandes de congés</div>
+                        </div>
+                    </div>
+                    <a href="{% url 'leave_add' %}?employee={{ employee.pk }}" class="btn btn-sm btn-outline-primary fw-semibold w-100">
+                        <i class="fa-solid fa-plus me-1"></i> Poser un congé
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-6">
+                <div class="custom-card p-3 h-100 d-flex flex-column justify-content-between">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <div class="rounded-3 bg-success-subtle text-success p-2 fs-5">
+                            <i class="fa-solid fa-receipt"></i>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold text-dark">{{ my_payslips|length }}</div>
+                            <div class="text-muted fs-8">Fiches de paie</div>
+                        </div>
+                    </div>
+                    <a href="#payslips-section" class="btn btn-sm btn-outline-success fw-semibold w-100">
+                        <i class="fa-solid fa-eye me-1"></i> Voir mes paies
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-6">
+                <div class="custom-card p-3 h-100 d-flex flex-column justify-content-between">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <div class="rounded-3 bg-info-subtle text-info p-2 fs-5">
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </div>
+                        <div>
+                            <div class="fs-5 fw-bold text-dark">{{ employee.seniority_display }}</div>
+                            <div class="text-muted fs-8">Ancienneté</div>
+                        </div>
+                    </div>
+                    <div class="fs-8 text-muted">Embauché le {{ employee.hire_date|date:"d/m/Y" }}</div>
+                </div>
+            </div>
+
+            <div class="col-6">
+                <div class="custom-card p-3 h-100 d-flex flex-column justify-content-between">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <div class="rounded-3 bg-warning-subtle text-warning p-2 fs-5">
+                            <i class="fa-solid fa-folder-open"></i>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold text-dark">{{ my_documents|length }}</div>
+                            <div class="text-muted fs-8">Documents RH</div>
+                        </div>
+                    </div>
+                    <a href="{% url 'employee_detail' employee.pk %}#documents" class="btn btn-sm btn-outline-warning fw-semibold w-100 text-dark">
+                        <i class="fa-solid fa-folder me-1"></i> Mes documents
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Sections Grid -->
+<div class="row g-4" id="payslips-section">
+    <!-- Mes Bulletins de Paie -->
+    <div class="col-12 col-lg-6">
+        <div class="custom-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                <h6 class="fw-bold text-dark m-0">
+                    <i class="fa-solid fa-receipt text-success me-2"></i> Mes Bulletins de Paie
+                </h6>
+            </div>
+            {% if my_payslips %}
+                <div class="table-responsive">
+                    <table class="table custom-table align-middle fs-7 mb-0">
+                        <thead>
+                            <tr>
+                                <th>Période</th>
+                                <th>Salaire Net</th>
+                                <th>Statut</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for slip in my_payslips %}
+                                <tr>
+                                    <td><strong class="text-dark">{{ slip.get_month_display }} {{ slip.year }}</strong></td>
+                                    <td class="fw-bold text-success">{{ slip.net_salary }} €</td>
+                                    <td>
+                                        {% if slip.status == 'PAYE' %}
+                                            <span class="badge bg-success-subtle text-success">Payé</span>
+                                        {% else %}
+                                            <span class="badge bg-warning-subtle text-warning">En attente</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'payslip_detail' slip.pk %}" class="btn btn-sm btn-light border" title="Voir / Imprimer">
+                                            <i class="fa-solid fa-eye text-primary me-1"></i> Fiche
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4 text-muted fs-8">
+                    <i class="fa-solid fa-file-invoice fs-2 d-block mb-2 text-muted"></i>
+                    Aucun bulletin de paie disponible pour le moment.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Mes Demandes de Congé -->
+    <div class="col-12 col-lg-6">
+        <div class="custom-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                <h6 class="fw-bold text-dark m-0">
+                    <i class="fa-solid fa-plane-departure text-primary me-2"></i> Mes Demandes de Congé
+                </h6>
+                <a href="{% url 'leave_add' %}?employee={{ employee.pk }}" class="btn btn-sm btn-primary fw-semibold">
+                    <i class="fa-solid fa-plus me-1"></i> Nouvelle Demande
+                </a>
+            </div>
+            {% if my_leaves %}
+                <div class="table-responsive">
+                    <table class="table custom-table align-middle fs-7 mb-0">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Période</th>
+                                <th>Jours</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for leave in my_leaves %}
+                                <tr>
+                                    <td class="fw-semibold text-dark">{{ leave.leave_type.name }}</td>
+                                    <td class="fs-8">{{ leave.start_date|date:"d/m" }} au {{ leave.end_date|date:"d/m/Y" }}</td>
+                                    <td><strong>{{ leave.duration_days }}</strong>j</td>
+                                    <td>
+                                        {% if leave.status == 'APPROUVE' %}
+                                            <span class="badge bg-success-subtle text-success">Approuvé</span>
+                                        {% elif leave.status == 'EN_ATTENTE' %}
+                                            <span class="badge bg-warning-subtle text-warning">En attente</span>
+                                        {% elif leave.status == 'REFUSE' %}
+                                            <span class="badge bg-danger-subtle text-danger">Refusé</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary">{{ leave.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4 text-muted fs-8">
+                    <i class="fa-solid fa-calendar-xmark fs-2 d-block mb-2 text-muted"></i>
+                    Aucune demande de congé en cours.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

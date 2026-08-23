@@ -149,10 +149,26 @@ def seed():
                 emp.contract_end_date = end_d
             if prob_d:
                 emp.probation_end_date = prob_d
+        # Créer / Lier le compte utilisateur Django pour la connexion
+        username = email.split('@')[0]
+        user, u_created = User.objects.get_or_create(
+            username=username,
+            defaults={
+                'email': email,
+                'first_name': fn,
+                'last_name': ln,
+                'is_staff': (dept_code == 'RH')
+            }
+        )
+        user.set_password('HRPulse2026!')
+        user.save()
+        if not emp.user:
+            emp.user = user
             emp.save()
+
         employees.append(emp)
         if created:
-            print(f"👤 Employé créé: {emp.full_name} ({reg})")
+            print(f"👤 Employé créé: {emp.full_name} ({reg}) | Compte login: '{username}' (mot de passe: 'HRPulse2026!')")
 
     # Set Managers
     emp_dict = {e.registration_number: e for e in Employee.objects.all()}

@@ -26,67 +26,105 @@
             </div>
             
             <ul class="sidebar-menu">
-                <li class="menu-category">Général</li>
-                <li>
-                    <a href="{% url 'dashboard' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                        <i class="fa-solid fa-chart-pie"></i>
-                        <span>Tableau de Bord</span>
-                    </a>
-                </li>
-                
-                <li class="menu-category">Gestion Personnel</li>
-                <li>
-                    <a href="{% url 'employee_list' %}" class="nav-link-custom {% if 'employee' in request.path and 'orgchart' not in request.path %}active{% endif %}">
-                        <i class="fa-solid fa-id-card"></i>
-                        <span>Employés</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'employee_org_chart' %}" class="nav-link-custom {% if 'orgchart' in request.path %}active{% endif %}">
-                        <i class="fa-solid fa-diagram-project"></i>
-                        <span>Organigramme</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'department_list' %}" class="nav-link-custom {% if 'department' in request.path %}active{% endif %}">
-                        <i class="fa-solid fa-sitemap"></i>
-                        <span>Départements</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'position_list' %}" class="nav-link-custom {% if 'position' in request.path %}active{% endif %}">
-                        <i class="fa-solid fa-briefcase"></i>
-                        <span>Postes & Grilles</span>
-                    </a>
-                </li>
+                {% if request.user.is_staff or request.user.is_superuser %}
+                    <!-- VUE ADMINISTRATEUR & GESTIONNAIRE RH -->
+                    <li class="menu-category">Général</li>
+                    <li>
+                        <a href="{% url 'dashboard' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                            <i class="fa-solid fa-chart-pie"></i>
+                            <span>Tableau de Bord</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'employee_portal' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'employee_portal' %}active{% endif %}">
+                            <i class="fa-solid fa-user-tie"></i>
+                            <span>Espace Collaborateur</span>
+                        </a>
+                    </li>
+                    
+                    <li class="menu-category">Gestion Personnel</li>
+                    <li>
+                        <a href="{% url 'employee_list' %}" class="nav-link-custom {% if 'employee' in request.path and 'orgchart' not in request.path %}active{% endif %}">
+                            <i class="fa-solid fa-id-card"></i>
+                            <span>Employés</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'employee_org_chart' %}" class="nav-link-custom {% if 'orgchart' in request.path %}active{% endif %}">
+                            <i class="fa-solid fa-diagram-project"></i>
+                            <span>Organigramme</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'department_list' %}" class="nav-link-custom {% if 'department' in request.path %}active{% endif %}">
+                            <i class="fa-solid fa-sitemap"></i>
+                            <span>Départements</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'position_list' %}" class="nav-link-custom {% if 'position' in request.path %}active{% endif %}">
+                            <i class="fa-solid fa-briefcase"></i>
+                            <span>Postes & Grilles</span>
+                        </a>
+                    </li>
 
-                <li class="menu-category">Gestion Temps & Paie</li>
-                <li>
-                    <a href="{% url 'leave_list' %}" class="nav-link-custom {% if 'leave' in request.path %}active{% endif %}">
-                        <i class="fa-solid fa-calendar-check"></i>
-                        <span>Congés & Absences</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'payslip_list' %}" class="nav-link-custom {% if 'payslip' in request.path %}active{% endif %}">
-                        <i class="fa-solid fa-file-invoice-dollar"></i>
-                        <span>Bulletins de Paie</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'attendance_list' %}" class="nav-link-custom {% if 'attendance' in request.path %}active{% endif %}">
-                        <i class="fa-solid fa-clock"></i>
-                        <span>Pointages & Présence</span>
-                    </a>
-                </li>
+                    <li class="menu-category">Gestion Temps & Paie</li>
+                    <li>
+                        <a href="{% url 'leave_list' %}" class="nav-link-custom {% if 'leave' in request.path %}active{% endif %}">
+                            <i class="fa-solid fa-calendar-check"></i>
+                            <span>Congés & Absences</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'payslip_list' %}" class="nav-link-custom {% if 'payslip' in request.path %}active{% endif %}">
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                            <span>Bulletins de Paie</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'attendance_list' %}" class="nav-link-custom {% if 'attendance' in request.path %}active{% endif %}">
+                            <i class="fa-solid fa-clock"></i>
+                            <span>Pointages & Présence</span>
+                        </a>
+                    </li>
 
-                <li class="menu-category">Administration</li>
-                <li>
-                    <a href="/admin/" target="_blank" class="nav-link-custom">
-                        <i class="fa-solid fa-sliders"></i>
-                        <span>Admin Django</span>
-                    </a>
-                </li>
+                    <li class="menu-category">Administration</li>
+                    <li>
+                        <a href="/admin/" target="_blank" class="nav-link-custom">
+                            <i class="fa-solid fa-sliders"></i>
+                            <span>Admin Django</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <!-- VUE COLLABORATEUR / SELF-SERVICE -->
+                    <li class="menu-category">Mon Espace</li>
+                    <li>
+                        <a href="{% url 'employee_portal' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'employee_portal' %}active{% endif %}">
+                            <i class="fa-solid fa-house-user"></i>
+                            <span>Accueil Portail</span>
+                        </a>
+                    </li>
+                    {% if request.user.employee_profile %}
+                        <li>
+                            <a href="{% url 'employee_detail' request.user.employee_profile.pk %}" class="nav-link-custom {% if 'employee' in request.path %}active{% endif %}">
+                                <i class="fa-solid fa-id-card"></i>
+                                <span>Mon Profil Collaborateur</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'leave_list' %}?employee={{ request.user.employee_profile.pk }}" class="nav-link-custom {% if 'leave' in request.path %}active{% endif %}">
+                                <i class="fa-solid fa-calendar-check"></i>
+                                <span>Mes Congés</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'payslip_list' %}" class="nav-link-custom {% if 'payslip' in request.path %}active{% endif %}">
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                                <span>Mes Fiches de Paie</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endif %}
             </ul>
         </nav>
 
@@ -102,22 +140,37 @@
                 </div>
                 
                 <div class="d-flex align-items-center gap-4">
-                    <form class="d-none d-md-flex" action="{% url 'employee_list' %}" method="GET">
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                            <input type="text" name="q" class="form-control bg-light border-start-0" placeholder="Rechercher un employé...">
-                        </div>
-                    </form>
+                    {% if request.user.is_staff or request.user.is_superuser %}
+                        <form class="d-none d-md-flex" action="{% url 'employee_list' %}" method="GET">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                                <input type="text" name="q" class="form-control bg-light border-start-0" placeholder="Rechercher un employé...">
+                            </div>
+                        </form>
+                    {% endif %}
 
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center gap-2 text-decoration-none dropdown-toggle text-dark" id="userDropdown" data-bs-toggle="dropdown">
-                            <div class="avatar-placeholder bg-indigo" style="width:36px; height:36px; font-size:0.9rem;">
-                                {{ request.user.username|first|upper }}
+                            {% if request.user.employee_profile and request.user.employee_profile.photo %}
+                                <img src="{{ request.user.employee_profile.photo.url }}" class="rounded-circle" style="width: 36px; height: 36px; object-fit: cover;">
+                            {% else %}
+                                <div class="avatar-placeholder bg-indigo" style="width:36px; height:36px; font-size:0.9rem;">
+                                    {{ request.user.first_name|first|default:request.user.username|first|upper }}
+                                </div>
+                            {% endif %}
+                            <div class="d-none d-md-block text-start">
+                                <span class="fw-semibold d-block fs-7">{{ request.user.get_full_name|default:request.user.username }}</span>
+                                <span class="fs-8 text-muted">{% if request.user.is_staff %}Administrateur RH{% else %}Collaborateur{% endif %}</span>
                             </div>
-                            <span class="fw-semibold d-none d-md-inline">{{ request.user.username|title }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                            <li><a class="dropdown-item" href="/admin/"><i class="fa-solid fa-user-gear me-2"></i> Administration</a></li>
+                            <li><a class="dropdown-item" href="{% url 'employee_portal' %}"><i class="fa-solid fa-house-user me-2 text-primary"></i> Espace Collaborateur</a></li>
+                            {% if request.user.employee_profile %}
+                                <li><a class="dropdown-item" href="{% url 'employee_detail' request.user.employee_profile.pk %}"><i class="fa-solid fa-id-card me-2 text-info"></i> Mon Profil</a></li>
+                            {% endif %}
+                            {% if request.user.is_staff %}
+                                <li><a class="dropdown-item" href="/admin/"><i class="fa-solid fa-user-gear me-2 text-secondary"></i> Admin Django</a></li>
+                            {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form action="{% url 'logout' %}" method="POST" class="d-inline">
@@ -141,6 +194,7 @@
                             <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
                                 {% if message.tags == 'success' %}<i class="fa-solid fa-circle-check me-2"></i>{% endif %}
                                 {% if message.tags == 'warning' %}<i class="fa-solid fa-triangle-exclamation me-2"></i>{% endif %}
+                                {% if message.tags == 'danger' or message.tags == 'error' %}<i class="fa-solid fa-circle-xmark me-2"></i>{% endif %}
                                 {{ message }}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>

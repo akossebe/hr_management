@@ -206,6 +206,35 @@
             </div>
         </div>
 
+        <!-- Section 6: Compte de Connexion & Accès Web -->
+        <div class="mb-4 p-3 bg-light rounded-3 border border-primary-subtle">
+            <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-key me-2"></i>6. Compte d'Accès Web (Connexion Collaborateur)</h6>
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <div class="form-check form-switch pt-2">
+                        {{ form.create_user_account }}
+                        <label class="form-check-label fw-semibold fs-7 ms-2" for="{{ form.create_user_account.id_for_label }}">
+                            Générer un compte de connexion
+                        </label>
+                    </div>
+                    <div class="fs-8 text-muted mt-1">L'employé pourra se connecter avec son email ou son matricule.</div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Mot de passe initial (optionnel)</label>
+                    {{ form.account_password }}
+                    <div class="fs-8 text-muted">Par défaut : <code>HRPulse2026!</code></div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="form-check form-switch pt-2">
+                        {{ form.is_admin_user }}
+                        <label class="form-check-label fw-semibold fs-7 ms-2" for="{{ form.is_admin_user.id_for_label }}">
+                            Droits Administrateur / RH (Staff)
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Submit Buttons -->
         <div class="d-flex justify-content-end gap-2 border-top pt-3">
             <a href="{% url 'employee_list' %}" class="btn btn-light border">Annuler</a>

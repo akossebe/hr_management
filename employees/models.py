@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.contrib.auth.models import User
 from datetime import date
 import os
 
@@ -107,6 +108,16 @@ class Employee(models.Model):
         ('DEMISSIONNE', 'Démissionné'),
         ('LICENCIE', 'Licencié'),
         ('RETRAITE', 'Retraité'),
+    )
+
+    # 0. Compte Utilisateur (Connexion)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='employee_profile',
+        verbose_name="Compte utilisateur associé"
     )
 
     # 1. Identité & État Civil

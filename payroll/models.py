@@ -57,6 +57,15 @@ class Payslip(models.Model):
         return f"Bulletin {self.get_month_display()} {self.year} - {self.employee.full_name}"
 
     def save(self, *args, **kwargs):
+        from decimal import Decimal
+        self.basic_salary = Decimal(str(self.basic_salary or 0))
+        self.transport_allowance = Decimal(str(self.transport_allowance or 0))
+        self.housing_allowance = Decimal(str(self.housing_allowance or 0))
+        self.performance_bonus = Decimal(str(self.performance_bonus or 0))
+        self.tax_deduction = Decimal(str(self.tax_deduction or 0))
+        self.social_security_deduction = Decimal(str(self.social_security_deduction or 0))
+        self.other_deductions = Decimal(str(self.other_deductions or 0))
+
         self.gross_salary = (
             self.basic_salary + 
             self.transport_allowance + 
@@ -68,5 +77,5 @@ class Payslip(models.Model):
             self.social_security_deduction + 
             self.other_deductions
         )
-        self.net_salary = max(self.gross_salary - total_deductions, 0)
+        self.net_salary = max(self.gross_salary - total_deductions, Decimal('0.00'))
         super().save(*args, **kwargs)

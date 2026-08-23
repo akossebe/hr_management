@@ -11,6 +11,7 @@ urlpatterns = [
     path('<int:pk>/edit/', views.EmployeeUpdateView.as_view(), name='employee_edit'),
     path('<int:pk>/delete/', views.EmployeeDeleteView.as_view(), name='employee_delete'),
     path('<int:pk>/badge/', views.EmployeeBadgeView.as_view(), name='employee_badge'),
+    path('<int:pk>/account/manage/', views.EmployeeManageAccountView.as_view(), name='employee_manage_account'),
     
     # Documents
     path('<int:pk>/documents/upload/', views.EmployeeDocumentUploadView.as_view(), name='employee_document_upload'),

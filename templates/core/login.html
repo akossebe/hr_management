@@ -15,27 +15,28 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 1.5rem;
         }
         .login-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             width: 100%;
-            max-width: 420px;
+            max-width: 440px;
             padding: 2.5rem;
         }
         .brand-icon {
-            width: 60px;
-            height: 60px;
+            width: 64px;
+            height: 64px;
             background: linear-gradient(135deg, #4f46e5, #0ea5e9);
-            border-radius: 16px;
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-size: 1.8rem;
-            margin: 0 auto 1.5rem;
+            margin: 0 auto 1.25rem;
         }
     </style>
 </head>
@@ -45,21 +46,24 @@
             <i class="fa-solid fa-users-gear"></i>
         </div>
         <h3 class="text-center fw-bold text-dark mb-1">HR Pulse</h3>
-        <p class="text-center text-muted fs-7 mb-4">Espace d'Administration RH</p>
+        <p class="text-center text-muted fs-7 mb-4">Portail Collaborateur & Administration RH</p>
 
         {% if form.errors %}
-            <div class="alert alert-danger p-2 fs-7 text-center rounded-3">
-                Nom d'utilisateur ou mot de passe incorrect.
+            <div class="alert alert-danger p-2 fs-7 text-center rounded-3 mb-3">
+                <i class="fa-solid fa-circle-exclamation me-1"></i> Identifiant ou mot de passe incorrect.
             </div>
         {% endif %}
 
         <form method="POST">
             {% csrf_token %}
             <div class="mb-3">
-                <label class="form-label fw-semibold text-secondary fs-7">Nom d'utilisateur</label>
+                <label class="form-label fw-semibold text-secondary fs-7">Identifiant de connexion</label>
                 <div class="input-group">
                     <span class="input-group-text bg-light"><i class="fa-solid fa-user text-muted"></i></span>
-                    <input type="text" name="username" class="form-control" required placeholder="admin">
+                    <input type="text" name="username" class="form-control" required placeholder="Nom d'utilisateur, Email ou Matricule">
+                </div>
+                <div class="form-text fs-8 text-muted mt-1">
+                    <i class="fa-solid fa-info-circle me-1"></i> Vous pouvez utiliser votre <strong>email</strong>, votre <strong>matricule</strong> ou votre <strong>username</strong>.
                 </div>
             </div>
             
@@ -76,8 +80,9 @@
             </button>
         </form>
 
-        <div class="mt-4 text-center fs-7 text-muted">
-            <i class="fa-solid fa-shield-halved me-1"></i> Connexion sécurisée - Django GRH
+        <div class="mt-4 pt-3 border-top text-center fs-8 text-muted">
+            <div><i class="fa-solid fa-shield-halved me-1 text-success"></i> Connexion sécurisée - Django GRH</div>
+            <div class="mt-1 text-muted">Identifiant admin par défaut : <code>admin</code> / <code>admin123</code></div>
         </div>
     </div>
 </body>

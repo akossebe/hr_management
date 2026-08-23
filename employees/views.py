@@ -7,8 +7,9 @@ from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q, Count, Sum, Avg
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from .models import Employee, Department, Position, EmployeeDocument
-from .forms import EmployeeForm, DepartmentForm, PositionForm, EmployeeDocumentForm
+from .forms import EmployeeForm, DepartmentForm, PositionForm, EmployeeDocumentForm, EmployeeUserAccountForm
 
 
 # ==========================================
@@ -22,7 +23,7 @@ class EmployeeListView(LoginRequiredMixin, ListView):
     paginate_by = 12
 
     def get_queryset(self):
-        queryset = Employee.objects.select_related('department', 'position', 'manager').all()
+        queryset = Employee.objects.select_related('department', 'position', 'manager', 'user').all()
         query = self.request.GET.get('q')
         dept_id = self.request.GET.get('department')
         status = self.request.GET.get('status')
@@ -55,7 +56,6 @@ class EmployeeListView(LoginRequiredMixin, ListView):
         if filter_type == 'probation':
             queryset = queryset.filter(probation_end_date__gte=date.today())
         elif filter_type == 'expiring':
-            # Contrats expirant dans les 30 jours
             from datetime import timedelta
             thirty_days_later = date.today() + timedelta(days=30)
             queryset = queryset.filter(
@@ -108,6 +108,21 @@ class EmployeeDetailView(LoginRequiredMixin, DetailView):
         context['recent_payslips'] = emp.payslips.all()[:5]
         context['recent_attendances'] = emp.attendances.all()[:10]
         context['subordinates'] = emp.subordinates.all()
+
+        # Initialisation du formulaire de gestion de compte utilisateur
+        if emp.user:
+            context['user_account_form'] = EmployeeUserAccountForm(initial={
+                'username': emp.user.username,
+                'is_active': emp.user.is_active,
+                'is_staff': emp.user.is_staff
+            })
+        else:
+            default_username = emp.email.split('@')[0] if emp.email else f"{emp.first_name.lower()}.{emp.last_name.lower()}"
+            context['user_account_form'] = EmployeeUserAccountForm(initial={
+                'username': default_username,
+                'is_active': True,
+                'is_staff': False
+            })
         return context
 
 
@@ -118,8 +133,43 @@ class EmployeeCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('employee_list')
 
     def form_valid(self, form):
-        messages.success(self.request, f"L'employé {form.instance.full_name} a été ajouté avec succès.")
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        employee = self.object
+
+        # Création optionnelle du compte utilisateur Django
+        create_account = form.cleaned_data.get('create_user_account')
+        if create_account:
+            username = employee.email.split('@')[0]
+            # S'assurer de l'unicité du username
+            base_username = username
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+
+            raw_password = form.cleaned_data.get('account_password') or "HRPulse2026!"
+            is_admin = form.cleaned_data.get('is_admin_user', False)
+
+            user = User.objects.create_user(
+                username=username,
+                email=employee.email,
+                password=raw_password,
+                first_name=employee.first_name,
+                last_name=employee.last_name,
+                is_staff=is_admin
+            )
+            employee.user = user
+            employee.save()
+
+            messages.success(
+                self.request, 
+                f"L'employé {employee.full_name} a été créé avec un compte d'accès web ! "
+                f"Identifiant : '{username}' | Mot de passe : '{raw_password}'"
+            )
+        else:
+            messages.success(self.request, f"L'employé {employee.full_name} a été ajouté avec succès.")
+
+        return response
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -134,8 +184,21 @@ class EmployeeUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'employees/employee_form.html'
 
     def form_valid(self, form):
-        messages.success(self.request, f"Fiche de {form.instance.full_name} mise à jour avec succès.")
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        employee = self.object
+        
+        # Mettre à jour l'email et le nom de l'utilisateur associé s'il existe
+        if employee.user:
+            user = employee.user
+            user.email = employee.email
+            user.first_name = employee.first_name
+            user.last_name = employee.last_name
+            if 'is_admin_user' in form.cleaned_data:
+                user.is_staff = form.cleaned_data['is_admin_user']
+            user.save()
+
+        messages.success(self.request, f"Fiche de {employee.full_name} mise à jour avec succès.")
+        return response
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -150,12 +213,78 @@ class EmployeeDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('employee_list')
 
     def delete(self, request, *args, **kwargs):
-        messages.warning(self.request, f"L'employé {self.get_object().full_name} a été supprimé.")
-        return super().delete(request, *args, **kwargs)
+        emp = self.get_object()
+        user = emp.user
+        emp_name = emp.full_name
+        response = super().delete(request, *args, **kwargs)
+        if user:
+            user.delete()
+        messages.warning(self.request, f"L'employé {emp_name} et son compte associé ont été supprimés.")
+        return response
 
 
 # ==========================================
-# 2. DOCUMENT MANAGEMENT VIEWS
+# 2. USER ACCOUNT MANAGEMENT (IDENTIFIANTS)
+# ==========================================
+
+class EmployeeManageAccountView(LoginRequiredMixin, View):
+    """Permet de créer, réinitialiser ou activer/désactiver le compte de connexion d'un employé."""
+    def post(self, request, pk):
+        employee = get_object_or_404(Employee, pk=pk)
+        form = EmployeeUserAccountForm(request.POST)
+
+        if form.is_valid():
+            username = form.cleaned_data['username'].strip()
+            password = form.cleaned_data['password']
+            is_active = form.cleaned_data['is_active']
+            is_staff = form.cleaned_data['is_staff']
+
+            if employee.user:
+                # Mise à jour du compte existant
+                user = employee.user
+                if User.objects.exclude(pk=user.pk).filter(username=username).exists():
+                    messages.error(request, f"Le nom d'utilisateur '{username}' est déjà utilisé par un autre compte.")
+                    return redirect('employee_detail', pk=pk)
+                user.username = username
+                user.is_active = is_active
+                user.is_staff = is_staff
+                if password:
+                    user.set_password(password)
+                    messages.success(request, f"Compte mis à jour ! Nouveau mot de passe défini pour {username} : '{password}'")
+                else:
+                    messages.success(request, f"Paramètres du compte {username} mis à jour avec succès.")
+                user.save()
+            else:
+                # Création d'un nouveau compte
+                if User.objects.filter(username=username).exists():
+                    messages.error(request, f"Le nom d'utilisateur '{username}' existe déjà. Veuillez en choisir un autre.")
+                    return redirect('employee_detail', pk=pk)
+                
+                raw_password = password if password else "HRPulse2026!"
+                user = User.objects.create_user(
+                    username=username,
+                    email=employee.email,
+                    password=raw_password,
+                    first_name=employee.first_name,
+                    last_name=employee.last_name,
+                    is_active=is_active,
+                    is_staff=is_staff
+                )
+                employee.user = user
+                employee.save()
+                messages.success(
+                    request, 
+                    f"Compte d'accès créé avec succès pour {employee.full_name} ! "
+                    f"Identifiant : '{username}' (ou email: '{employee.email}') | Mot de passe : '{raw_password}'"
+                )
+        else:
+            messages.error(request, "Données invalides dans le formulaire de compte.")
+
+        return redirect('employee_detail', pk=pk)
+
+
+# ==========================================
+# 3. DOCUMENT MANAGEMENT VIEWS
 # ==========================================
 
 class EmployeeDocumentUploadView(LoginRequiredMixin, View):
@@ -183,7 +312,7 @@ class EmployeeDocumentDeleteView(LoginRequiredMixin, View):
 
 
 # ==========================================
-# 3. EXPORTS & BADGE
+# 4. EXPORTS & BADGE
 # ==========================================
 
 class EmployeeBadgeView(LoginRequiredMixin, DetailView):
@@ -206,7 +335,6 @@ def export_employees_csv(request):
 
     employees = Employee.objects.select_related('department', 'position', 'manager').all()
     
-    # Appliquer les mêmes filtres si présents
     dept_id = request.GET.get('department')
     status = request.GET.get('status')
     contract = request.GET.get('contract_type')
@@ -243,7 +371,7 @@ def export_employees_csv(request):
 
 
 # ==========================================
-# 4. ORGANIGRAMME (ORG CHART)
+# 5. ORGANIGRAMME (ORG CHART)
 # ==========================================
 
 class OrgChartView(LoginRequiredMixin, TemplateView):
@@ -253,7 +381,6 @@ class OrgChartView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         departments = Department.objects.prefetch_related('employees__position', 'employees__manager').all()
         
-        # Managers de haut niveau (sans manager ou avec subordonnés)
         top_managers = Employee.objects.filter(
             status='ACTIF',
             subordinates__isnull=False
@@ -266,7 +393,7 @@ class OrgChartView(LoginRequiredMixin, TemplateView):
 
 
 # ==========================================
-# 5. DEPARTMENT MANAGEMENT VIEWS
+# 6. DEPARTMENT MANAGEMENT VIEWS
 # ==========================================
 
 class DepartmentListView(LoginRequiredMixin, ListView):
@@ -331,7 +458,7 @@ class DepartmentDeleteView(LoginRequiredMixin, DeleteView):
 
 
 # ==========================================
-# 6. POSITION MANAGEMENT VIEWS (POSTES)
+# 7. POSITION MANAGEMENT VIEWS (POSTES)
 # ==========================================
 
 class PositionListView(LoginRequiredMixin, ListView):

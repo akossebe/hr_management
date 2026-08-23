@@ -1,6 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from datetime import date, timedelta
 from employees.models import Department, Position, Employee, EmployeeDocument
 
@@ -39,11 +40,11 @@ class EmployeeModelTests(TestCase):
         self.assertEqual(self.dept.total_payroll, 4000)
 
 
-class EmployeeViewsTests(TestCase):
+class EmployeeAuthAndViewsTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(username='testuser', password='password123')
-        self.client.login(username='testuser', password='password123')
+        self.admin_user = User.objects.create_superuser(username='admin', password='adminpassword', email='admin@hr.com')
+        self.client.login(username='admin', password='adminpassword')
 
         self.dept = Department.objects.create(name="Ressources Humaines", code="RH")
         self.pos = Position.objects.create(
@@ -52,7 +53,15 @@ class EmployeeViewsTests(TestCase):
             base_salary_min=2500,
             base_salary_max=4000
         )
+        
+        # User associé à l'employé
+        self.emp_user = User.objects.create_user(
+            username='sophie.durand',
+            email='sophie.durand@entreprise.com',
+            password='secretpassword123'
+        )
         self.employee = Employee.objects.create(
+            user=self.emp_user,
             first_name="Sophie",
             last_name="Durand",
             email="sophie.durand@entreprise.com",
@@ -64,6 +73,46 @@ class EmployeeViewsTests(TestCase):
             hire_date=date.today() - timedelta(days=200),
             base_salary=3200
         )
+
+    def test_multi_identifier_auth_backend(self):
+        # 1. Connexion par username
+        user1 = authenticate(username='sophie.durand', password='secretpassword123')
+        self.assertIsNotNone(user1)
+
+        # 2. Connexion par email
+        user2 = authenticate(username='sophie.durand@entreprise.com', password='secretpassword123')
+        self.assertIsNotNone(user2)
+        self.assertEqual(user1, user2)
+
+        # 3. Connexion par matricule
+        user3 = authenticate(username=self.employee.registration_number, password='secretpassword123')
+        self.assertIsNotNone(user3)
+        self.assertEqual(user1, user3)
+
+    def test_employee_portal_view(self):
+        # Connexion en tant que Sophie Durand (employé simple)
+        self.client.logout()
+        self.client.login(username='sophie.durand', password='secretpassword123')
+        response = self.client.get(reverse('employee_portal'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Sophie")
+        self.assertContains(response, "Espace Collaborateur")
+
+    def test_employee_manage_account_view(self):
+        response = self.client.post(
+            reverse('employee_manage_account', kwargs={'pk': self.employee.pk}),
+            {
+                'username': 'sophie.durand.updated',
+                'password': 'newsecretpassword456',
+                'is_active': True,
+                'is_staff': True
+            }
+        )
+        self.assertEqual(response.status_code, 302)
+        self.emp_user.refresh_from_db()
+        self.assertEqual(self.emp_user.username, 'sophie.durand.updated')
+        self.assertTrue(self.emp_user.check_password('newsecretpassword456'))
+        self.assertTrue(self.emp_user.is_staff)
 
     def test_employee_list_view(self):
         response = self.client.get(reverse('employee_list'))

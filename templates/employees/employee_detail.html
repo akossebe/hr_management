@@ -184,7 +184,7 @@
                     <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
                         <i class="fa-solid fa-truck-medical me-2 text-danger"></i> Contact d'Urgence
                     </h6>
-                    <table class="table table-borderless fs-7 m-0">
+                    <table class="table table-borderless fs-7 m-0 mb-4">
                         <tr>
                             <td class="text-muted w-40">Personne à contacter :</td>
                             <td class="fw-bold text-dark">{{ employee.emergency_contact_name|default:"Non renseigné" }}</td>
@@ -198,6 +198,48 @@
                             <td class="fw-bold text-danger">{{ employee.emergency_contact_phone|default:"-" }}</td>
                         </tr>
                     </table>
+
+                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                        <i class="fa-solid fa-key me-2 text-warning"></i> Compte de Connexion & Accès Web
+                    </h6>
+                    {% if employee.user %}
+                        <div class="p-3 bg-light rounded-3 border mb-2 fs-7">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <span class="text-muted d-block fs-8">Nom d'utilisateur :</span>
+                                    <strong class="font-monospace text-dark fs-6">{{ employee.user.username }}</strong>
+                                </div>
+                                <div>
+                                    {% if employee.user.is_active %}
+                                        <span class="badge bg-success-subtle text-success"><i class="fa-solid fa-check me-1"></i>Actif</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger"><i class="fa-solid fa-ban me-1"></i>Désactivé</span>
+                                    {% endif %}
+                                    {% if employee.user.is_staff %}
+                                        <span class="badge bg-primary-subtle text-primary ms-1">Admin RH</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="fs-8 text-muted mb-3">
+                                <i class="fa-solid fa-circle-info me-1 text-primary"></i> Connexion possible avec : <code>{{ employee.user.username }}</code>, <code>{{ employee.email }}</code> ou <code>{{ employee.registration_number }}</code>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#accountModal">
+                                <i class="fa-solid fa-user-lock me-1"></i> Gérer les identifiants
+                            </button>
+                        </div>
+                    {% else %}
+                        <div class="p-3 bg-warning-subtle text-dark rounded-3 border border-warning mb-2 fs-7">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div>
+                                    <strong class="text-dark"><i class="fa-solid fa-triangle-exclamation me-1 text-warning"></i> Aucun compte d'accès web</strong>
+                                    <div class="fs-8 text-muted">Ce collaborateur n'a pas encore d'identifiants de connexion.</div>
+                                </div>
+                                <button class="btn btn-sm btn-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#accountModal">
+                                    <i class="fa-solid fa-user-plus me-1"></i> Créer les identifiants
+                                </button>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -626,6 +668,57 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- Modal Gestion Compte Utilisateur -->
+    <div class="modal fade no-print" id="accountModal" tabindex="-1" aria-labelledby="accountModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'employee_manage_account' employee.pk %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold text-dark" id="accountModalLabel">
+                            <i class="fa-solid fa-user-lock me-2 text-primary"></i> Compte d'Accès Collaborateur
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="fs-7 text-muted mb-3">
+                            Définissez ou réinitialisez les identifiants pour permettre à <strong>{{ employee.full_name }}</strong> de se connecter à la plateforme.
+                        </p>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold fs-7">Nom d'utilisateur (Username) *</label>
+                            {{ user_account_form.username }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold fs-7">
+                                Mot de Passe {% if employee.user %}<span class="text-muted fw-normal">(laisser vide pour conserver l'actuel)</span>{% else %}*{% endif %}
+                            </label>
+                            {{ user_account_form.password }}
+                            <div class="form-text fs-8 text-muted">Ex: <code>HRPulse2026!</code> ou mot de passe temporaire</div>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            {{ user_account_form.is_active }}
+                            <label class="form-check-label fs-7 ms-2" for="{{ user_account_form.is_active.id_for_label }}">
+                                Compte activé (Autoriser la connexion)
+                            </label>
+                        </div>
+                        <div class="form-check form-switch">
+                            {{ user_account_form.is_staff }}
+                            <label class="form-check-label fs-7 ms-2" for="{{ user_account_form.is_staff.id_for_label }}">
+                                Accès Administrateur / RH (Staff)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary fw-semibold shadow-sm">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Enregistrer les identifiants
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
 </div>
 {% endblock %}
