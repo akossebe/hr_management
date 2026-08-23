@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestion des Postes - HR Pulse{% endblock %}
+{% block header_title %}Postes & Fonctions{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold m-0 text-dark">Répertoire des Postes</h4>
+        <p class="text-muted m-0 fs-7">Gestion des fonctions, responsabilités et grilles salariales</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'department_list' %}" class="btn btn-outline-secondary rounded-3 shadow-sm fw-semibold">
+            <i class="fa-solid fa-sitemap me-1"></i> Départements
+        </a>
+        <a href="{% url 'position_add' %}" class="btn btn-primary rounded-3 shadow-sm fw-semibold">
+            <i class="fa-solid fa-plus me-1"></i> Ajouter un Poste
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="custom-card p-3 mb-4">
+    <form method="GET" class="row g-2 align-items-center">
+        <div class="col-12 col-md-4">
+            <select name="department" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Filtrer par département --</option>
+                {% for dept in departments %}
+                    <option value="{{ dept.id }}" {% if selected_dept == dept.id|stringformat:"s" %}selected{% endif %}>
+                        {{ dept.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-md-2">
+            <a href="{% url 'position_list' %}" class="btn btn-light border w-100">
+                <i class="fa-solid fa-arrows-rotate me-1"></i> Réinitialiser
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Positions Table Card -->
+<div class="custom-card">
+    <div class="table-responsive">
+        <table class="table custom-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Intitulé du Poste</th>
+                    <th>Département</th>
+                    <th>Grille Salariale (Min - Max)</th>
+                    <th>Collaborateurs</th>
+                    <th>Missions</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pos in positions %}
+                    <tr>
+                        <td>
+                            <strong class="text-dark fs-7">{{ pos.title }}</strong>
+                        </td>
+                        <td>
+                            <a href="{% url 'department_detail' pos.department.pk %}" class="badge bg-light text-primary border text-decoration-none">
+                                {{ pos.department.name }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="fw-semibold text-dark">{{ pos.base_salary_min }} €</span>
+                            <span class="text-muted">à</span>
+                            <span class="fw-semibold text-success">{{ pos.base_salary_max }} €</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary fw-bold">
+                                <i class="fa-solid fa-users me-1"></i> {{ pos.emp_count }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="text-muted fs-8">{{ pos.description|default:"-"|truncatechars:60 }}</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'position_edit' pos.pk %}" class="btn btn-light border" title="Modifier">
+                                    <i class="fa-solid fa-pen-to-square text-warning"></i>
+                                </a>
+                                <a href="{% url 'position_delete' pos.pk %}" class="btn btn-light border" title="Supprimer">
+                                    <i class="fa-solid fa-trash-can text-danger"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-briefcase fs-1 d-block mb-3"></i>
+                            Aucun poste configuré.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

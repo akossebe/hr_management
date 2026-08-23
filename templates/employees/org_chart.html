@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Organigramme de l'Entreprise - HR Pulse{% endblock %}
+{% block header_title %}Organigramme & Structure RH{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold m-0 text-dark">Organigramme de l'Entreprise</h4>
+        <p class="text-muted m-0 fs-7">Visualisation de la structure hiérarchique par département et responsables</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'employee_list' %}" class="btn btn-outline-secondary fw-semibold">
+            <i class="fa-solid fa-list me-1"></i> Vue Répertoire
+        </a>
+        <a href="{% url 'department_list' %}" class="btn btn-outline-primary fw-semibold">
+            <i class="fa-solid fa-sitemap me-1"></i> Départements
+        </a>
+    </div>
+</div>
+
+<!-- Executive / Top Level Card -->
+<div class="custom-card p-4 mb-4 text-center bg-primary text-white rounded-4 shadow-sm">
+    <i class="fa-solid fa-building-user fs-1 mb-2 text-white-50"></i>
+    <h4 class="fw-bold m-0 text-white">DIRECTION GÉNÉRALE & COMITÉ DE DIRECTION</h4>
+    <p class="text-white-75 fs-7 m-0">Supervision de {{ departments|length }} départements &bull; {{ total_employees }} collaborateurs actifs</p>
+</div>
+
+<!-- Department Cards Grid -->
+<div class="row g-4">
+    {% for dept in departments %}
+        <div class="col-12 col-lg-6">
+            <div class="custom-card p-4 h-100 shadow-sm border-top border-4 border-primary">
+                <!-- Department Title -->
+                <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                    <div>
+                        <h5 class="fw-bold text-dark m-0">
+                            <a href="{% url 'department_detail' dept.pk %}" class="text-dark text-decoration-none hover-primary">
+                                {{ dept.name }}
+                            </a>
+                        </h5>
+                        <span class="badge bg-light text-dark font-monospace border mt-1">{{ dept.code }}</span>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary fs-7 px-3 py-2">
+                        <i class="fa-solid fa-users me-1"></i> {{ dept.employees.count }} membre{{ dept.employees.count|pluralize }}
+                    </span>
+                </div>
+
+                <!-- Manager Section -->
+                <div class="p-3 bg-light rounded-3 mb-3 border">
+                    <span class="fs-8 text-uppercase fw-bold text-muted d-block mb-2">Responsable de Département :</span>
+                    {% if dept.manager %}
+                        <div class="d-flex align-items-center gap-3">
+                            {% if dept.manager.photo %}
+                                <img src="{{ dept.manager.photo.url }}" class="rounded-circle shadow-sm" style="width: 48px; height: 48px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center shadow-sm" style="width: 48px; height: 48px;">
+                                    {{ dept.manager.first_name|first }}{{ dept.manager.last_name|first }}
+                                </div>
+                            {% endif %}
+                            <div>
+                                <a href="{% url 'employee_detail' dept.manager.pk %}" class="fw-bold text-dark text-decoration-none hover-primary">
+                                    {{ dept.manager.full_name }}
+                                </a>
+                                <div class="fs-8 text-primary fw-semibold">{{ dept.manager.position.title|default:"Manager" }}</div>
+                                <div class="fs-8 text-muted"><i class="fa-solid fa-envelope me-1"></i>{{ dept.manager.email }}</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-muted fs-8 font-italic">Aucun responsable désigné pour ce département.</div>
+                    {% endif %}
+                </div>
+
+                <!-- Team Members List -->
+                <h6 class="fs-8 text-uppercase fw-bold text-muted mb-2">Membres de l'équipe :</h6>
+                <div class="list-group list-group-flush fs-7">
+                    {% for emp in dept.employees.all %}
+                        {% if emp != dept.manager %}
+                            <div class="list-group-item px-0 py-2 d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if emp.photo %}
+                                        <img src="{{ emp.photo.url }}" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="rounded-circle bg-light text-primary fw-bold d-flex align-items-center justify-content-center border" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                            {{ emp.first_name|first }}{{ emp.last_name|first }}
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <a href="{% url 'employee_detail' emp.pk %}" class="fw-semibold text-dark text-decoration-none hover-primary">
+                                            {{ emp.full_name }}
+                                        </a>
+                                        <span class="text-muted fs-8 d-block">{{ emp.position.title|default:"Poste non spécifié" }}</span>
+                                    </div>
+                                </div>
+                                <span class="badge bg-light text-dark border fs-8">{{ emp.contract_type }}</span>
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <div class="text-muted fs-8 py-2">Aucun membre dans cette équipe.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

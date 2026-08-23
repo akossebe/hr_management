@@ -4,48 +4,68 @@
 {% block header_title %}Départements de l'Entreprise{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
-        <h4 class="fw-bold m-0 text-dark">Départements</h4>
-        <p class="text-muted m-0 fs-7">Structure organisationnelle de l'entreprise</p>
+        <h4 class="fw-bold m-0 text-dark">Départements & Pôles</h4>
+        <p class="text-muted m-0 fs-7">Structure organisationnelle et répartition des équipes</p>
     </div>
-    <a href="{% url 'department_add' %}" class="btn btn-primary rounded-3 shadow-sm fw-semibold">
-        <i class="fa-solid fa-folder-plus me-2"></i> Ajouter un Département
-    </a>
+    <div class="d-flex gap-2">
+        <a href="{% url 'position_list' %}" class="btn btn-outline-secondary rounded-3 shadow-sm fw-semibold">
+            <i class="fa-solid fa-briefcase me-1"></i> Gérer les Postes
+        </a>
+        <a href="{% url 'department_add' %}" class="btn btn-primary rounded-3 shadow-sm fw-semibold">
+            <i class="fa-solid fa-folder-plus me-2"></i> Ajouter un Département
+        </a>
+    </div>
 </div>
 
-<div class="row g-3">
+<div class="row g-4">
     {% for dept in departments %}
         <div class="col-12 col-md-6 col-lg-4">
-            <div class="custom-card p-4 h-100 d-flex flex-column justify-content-between">
+            <div class="custom-card p-4 h-100 d-flex flex-column justify-content-between hover-card">
                 <div>
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="badge bg-indigo text-white font-monospace px-2 py-1">{{ dept.code }}</span>
-                        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold">
-                            <i class="fa-solid fa-users me-1"></i> {{ dept.emp_count }} employé(s)
+                        <span class="badge bg-primary font-monospace px-2 py-1">{{ dept.code }}</span>
+                        <span class="badge bg-primary-subtle text-primary fw-bold">
+                            <i class="fa-solid fa-users me-1"></i> {{ dept.emp_count }} collaborateur{{ dept.emp_count|pluralize }}
                         </span>
                     </div>
-                    <h5 class="fw-bold text-dark mb-1">{{ dept.name }}</h5>
+                    <h5 class="fw-bold text-dark mb-1">
+                        <a href="{% url 'department_detail' dept.pk %}" class="text-dark text-decoration-none hover-primary">
+                            {{ dept.name }}
+                        </a>
+                    </h5>
                     <p class="text-muted fs-7 mb-3">
                         {{ dept.description|default:"Aucune description."|truncatechars:90 }}
                     </p>
-                    <div class="fs-7 text-secondary">
-                        <i class="fa-solid fa-user-tie me-1 text-primary"></i> Responsable : 
-                        {% if dept.manager %}
-                            <strong class="text-dark">{{ dept.manager.full_name }}</strong>
-                        {% else %}
-                            <span class="text-muted">Non désigné</span>
-                        {% endif %}
+                    
+                    <div class="p-2 bg-light rounded-3 mb-3 fs-8">
+                        <div class="text-secondary mb-1">
+                            <i class="fa-solid fa-user-tie me-1 text-primary"></i> Responsable : 
+                            {% if dept.manager %}
+                                <strong class="text-dark">{{ dept.manager.full_name }}</strong>
+                            {% else %}
+                                <span class="text-muted">Non désigné</span>
+                            {% endif %}
+                        </div>
+                        <div class="text-muted">
+                            <i class="fa-solid fa-coins me-1 text-warning"></i> Masse salariale : <strong class="text-dark">{{ dept.total_salary|default:0 }} €</strong>/mois
+                        </div>
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-3">
-                    <a href="{% url 'department_edit' dept.pk %}" class="btn btn-sm btn-outline-secondary">
-                        <i class="fa-solid fa-pen-to-square me-1"></i> Modifier
+                <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-2">
+                    <a href="{% url 'department_detail' dept.pk %}" class="btn btn-sm btn-light border fw-semibold">
+                        <i class="fa-solid fa-eye me-1 text-primary"></i> Consulter
                     </a>
-                    <a href="{% url 'department_delete' dept.pk %}" class="btn btn-sm btn-outline-danger">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </a>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'department_edit' dept.pk %}" class="btn btn-light border" title="Modifier">
+                            <i class="fa-solid fa-pen-to-square text-warning"></i>
+                        </a>
+                        <a href="{% url 'department_delete' dept.pk %}" class="btn btn-light border" title="Supprimer">
+                            <i class="fa-solid fa-trash-can text-danger"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

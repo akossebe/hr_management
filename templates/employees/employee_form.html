@@ -11,7 +11,7 @@
 </div>
 
 <div class="custom-card p-4">
-    <h4 class="fw-bold text-dark mb-4 border-bottom pb-2">
+    <h4 class="fw-bold text-dark mb-4 border-bottom pb-3">
         <i class="fa-solid fa-user-gear me-2 text-primary"></i> {{ title }}
     </h4>
 
@@ -20,104 +20,189 @@
 
         {% if form.errors %}
             <div class="alert alert-danger mb-4">
-                <strong>Attention !</strong> Veuillez corriger les erreurs ci-dessous :
-                {{ form.errors }}
+                <strong><i class="fa-solid fa-triangle-exclamation me-2"></i>Veuillez corriger les erreurs suivantes :</strong>
+                <ul class="mb-0 mt-2">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}</strong>: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
             </div>
         {% endif %}
 
         <!-- Section 1: Identité -->
-        <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-address-card me-2"></i>1. Identité et État Civil</h6>
-        <div class="row g-3 mb-4">
-            <div class="col-12 col-md-4">
-                <label class="form-label fw-semibold fs-7">Matricule Employé</label>
-                {{ form.registration_number }}
-                <span class="fs-8 text-muted">Laissez vide pour auto-générer</span>
-            </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label fw-semibold fs-7">Prénom *</label>
-                {{ form.first_name }}
-            </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label fw-semibold fs-7">Nom *</label>
-                {{ form.last_name }}
-            </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label fw-semibold fs-7">Email Professionnel *</label>
-                {{ form.email }}
-            </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label fw-semibold fs-7">Téléphone *</label>
-                {{ form.phone }}
-            </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label fw-semibold fs-7">Genre</label>
-                {{ form.gender }}
-            </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label fw-semibold fs-7">Date de Naissance</label>
-                {{ form.date_of_birth }}
-            </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label fw-semibold fs-7">Statut Matrimonial</label>
-                {{ form.marital_status }}
-            </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label fw-semibold fs-7">Photo de Profil</label>
-                {{ form.photo }}
-            </div>
-            <div class="col-12">
-                <label class="form-label fw-semibold fs-7">Adresse Résidentielle</label>
-                {{ form.address }}
-            </div>
-        </div>
-
-        <!-- Section 2: Contact d'Urgence -->
-        <h6 class="fw-bold text-danger mb-3"><i class="fa-solid fa-phone-volume me-2"></i>2. Contact en cas d'urgence</h6>
-        <div class="row g-3 mb-4">
-            <div class="col-12 col-md-6">
-                <label class="form-label fw-semibold fs-7">Nom du contact</label>
-                {{ form.emergency_contact_name }}
-            </div>
-            <div class="col-12 col-md-6">
-                <label class="form-label fw-semibold fs-7">Téléphone du contact</label>
-                {{ form.emergency_contact_phone }}
+        <div class="mb-4 p-3 bg-light rounded-3 border">
+            <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-address-card me-2"></i>1. Identité et État Civil</h6>
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Matricule Employé</label>
+                    {{ form.registration_number }}
+                    <span class="fs-8 text-muted">Laissez vide pour auto-générer (ex: EMP-2026-0001)</span>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Prénom *</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Nom *</label>
+                    {{ form.last_name }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Genre *</label>
+                    {{ form.gender }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Statut Matrimonial</label>
+                    {{ form.marital_status }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Groupe Sanguin</label>
+                    {{ form.blood_group }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Date de Naissance</label>
+                    {{ form.date_of_birth }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Lieu de Naissance</label>
+                    {{ form.place_of_birth }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Nationalité</label>
+                    {{ form.nationality }}
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold fs-7">N° CNI / Passeport / Sécurité Sociale</label>
+                    {{ form.national_id_number }}
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold fs-7">Photo de Profil (Avatar)</label>
+                    {{ form.photo }}
+                </div>
             </div>
         </div>
 
-        <!-- Section 3: Emploi & Contrat -->
-        <h6 class="fw-bold text-success mb-3"><i class="fa-solid fa-briefcase me-2"></i>3. Contrat et Affectation</h6>
-        <div class="row g-3 mb-4">
-            <div class="col-12 col-md-4">
-                <label class="form-label fw-semibold fs-7">Département</label>
-                {{ form.department }}
+        <!-- Section 2: Coordonnées & Adresse -->
+        <div class="mb-4 p-3 bg-light rounded-3 border">
+            <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-location-dot me-2"></i>2. Coordonnées & Adresse</h6>
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Email Professionnel *</label>
+                    {{ form.email }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Email Personnel</label>
+                    {{ form.personal_email }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Téléphone *</label>
+                    {{ form.phone }}
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold fs-7">Adresse Résidentielle</label>
+                    {{ form.address }}
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold fs-7">Ville</label>
+                    {{ form.city }}
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold fs-7">Code Postal</label>
+                    {{ form.postal_code }}
+                </div>
             </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label fw-semibold fs-7">Poste / Fonction</label>
-                {{ form.position }}
+        </div>
+
+        <!-- Section 3: Contact d'Urgence -->
+        <div class="mb-4 p-3 bg-light rounded-3 border">
+            <h6 class="fw-bold text-danger mb-3"><i class="fa-solid fa-truck-medical me-2"></i>3. Contact en cas d'Urgence</h6>
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Nom du contact d'urgence</label>
+                    {{ form.emergency_contact_name }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Lien de parenté / Relation</label>
+                    {{ form.emergency_contact_relation }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Téléphone d'urgence</label>
+                    {{ form.emergency_contact_phone }}
+                </div>
             </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label fw-semibold fs-7">Superviseur Hiérarchique</label>
-                {{ form.manager }}
+        </div>
+
+        <!-- Section 4: Contrat & Affectation -->
+        <div class="mb-4 p-3 bg-light rounded-3 border">
+            <h6 class="fw-bold text-success mb-3"><i class="fa-solid fa-briefcase me-2"></i>4. Affectation, Poste & Contrat</h6>
+            <div class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Département</label>
+                    {{ form.department }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Poste / Fonction</label>
+                    {{ form.position }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Superviseur Hiérarchique (Manager)</label>
+                    {{ form.manager }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Type de Contrat *</label>
+                    {{ form.contract_type }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Statut Collaborateur *</label>
+                    {{ form.status }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">Date d'Embauche *</label>
+                    {{ form.hire_date }}
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold fs-7">Date Fin Période d'Essai</label>
+                    {{ form.probation_end_date }}
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold fs-7">Date Fin de Contrat (si CDD / Stage)</label>
+                    {{ form.contract_end_date }}
+                </div>
             </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label fw-semibold fs-7">Type de Contrat *</label>
-                {{ form.contract_type }}
-            </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label fw-semibold fs-7">Statut de l'Employé</label>
-                {{ form.status }}
-            </div>
-            <div class="col-12 col-md-4">
-                <label class="form-label fw-semibold fs-7">Salaire de Base Mensuel (€) *</label>
-                {{ form.base_salary }}
-            </div>
-            <div class="col-12 col-md-6">
-                <label class="form-label fw-semibold fs-7">Date d'Embauche *</label>
-                {{ form.hire_date }}
-            </div>
-            <div class="col-12 col-md-6">
-                <label class="form-label fw-semibold fs-7">Date Fin de Contrat (si CDD/Stage)</label>
-                {{ form.contract_end_date }}
+        </div>
+
+        <!-- Section 5: Rémunération, Banque & Compétences -->
+        <div class="mb-4 p-3 bg-light rounded-3 border">
+            <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-coins me-2 text-warning"></i>5. Rémunération, Coordonnées Bancaires & Compétences</h6>
+            <div class="row g-3">
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold fs-7">Salaire de Base Mensuel (€) *</label>
+                    {{ form.base_salary }}
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-semibold fs-7">Établissement Bancaire</label>
+                    {{ form.bank_name }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold fs-7">IBAN / Numéro de compte</label>
+                    {{ form.iban }}
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-semibold fs-7">Code BIC / SWIFT</label>
+                    {{ form.swift_bic }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold fs-7">Compétences clés</label>
+                    {{ form.skills }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold fs-7">Notes internes RH</label>
+                    {{ form.notes }}
+                </div>
             </div>
         </div>
 
