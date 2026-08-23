@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestion de la Paie - HR Pulse{% endblock %}
+{% block header_title %}Gestion des Bulletins de Paie{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold m-0 text-dark">Bulletins de Paie</h4>
+        <p class="text-muted m-0 fs-7">Génération et suivi de la paie des employés</p>
+    </div>
+    <a href="{% url 'payslip_add' %}" class="btn btn-success rounded-3 shadow-sm fw-semibold">
+        <i class="fa-solid fa-file-circle-plus me-2"></i> Générer un Bulletin
+    </a>
+</div>
+
+<!-- Payroll Totals Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="card-stat">
+            <div>
+                <div class="stat-value text-primary">{{ total_gross|floatformat:2 }} €</div>
+                <div class="stat-label">Total Salaire Brut</div>
+            </div>
+            <div class="stat-icon primary"><i class="fa-solid fa-calculator"></i></div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <div class="card-stat">
+            <div>
+                <div class="stat-value text-success">{{ total_net|floatformat:2 }} €</div>
+                <div class="stat-label">Total Salaire Net Versé</div>
+            </div>
+            <div class="stat-icon success"><i class="fa-solid fa-money-bill-wave"></i></div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <div class="card-stat">
+            <div>
+                <div class="stat-value text-indigo">{{ total_count }}</div>
+                <div class="stat-label">Bulletins Générés</div>
+            </div>
+            <div class="stat-icon info"><i class="fa-solid fa-file-invoice"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="custom-card p-3 mb-4">
+    <form method="GET" action="{% url 'payslip_list' %}" class="row g-2 align-items-center">
+        <div class="col-12 col-md-4">
+            <select name="month" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Tous les mois --</option>
+                <option value="1" {% if selected_month == '1' %}selected{% endif %}>Janvier</option>
+                <option value="2" {% if selected_month == '2' %}selected{% endif %}>Février</option>
+                <option value="3" {% if selected_month == '3' %}selected{% endif %}>Mars</option>
+                <option value="4" {% if selected_month == '4' %}selected{% endif %}>Avril</option>
+                <option value="5" {% if selected_month == '5' %}selected{% endif %}>Mai</option>
+                <option value="6" {% if selected_month == '6' %}selected{% endif %}>Juin</option>
+                <option value="7" {% if selected_month == '7' %}selected{% endif %}>Juillet</option>
+                <option value="8" {% if selected_month == '8' %}selected{% endif %}>Août</option>
+                <option value="9" {% if selected_month == '9' %}selected{% endif %}>Septembre</option>
+                <option value="10" {% if selected_month == '10' %}selected{% endif %}>Octobre</option>
+                <option value="11" {% if selected_month == '11' %}selected{% endif %}>Novembre</option>
+                <option value="12" {% if selected_month == '12' %}selected{% endif %}>Décembre</option>
+            </select>
+        </div>
+
+        <div class="col-12 col-md-3">
+            <input type="number" name="year" value="{{ selected_year }}" class="form-control" placeholder="Année (ex: 2026)">
+        </div>
+
+        <div class="col-12 col-md-3">
+            <button type="submit" class="btn btn-primary w-100 fw-semibold">Filtrer</button>
+        </div>
+
+        <div class="col-12 col-md-2">
+            <a href="{% url 'payslip_list' %}" class="btn btn-light border w-100">Réinitialiser</a>
+        </div>
+    </form>
+</div>
+
+<!-- Table Card -->
+<div class="custom-card">
+    <div class="table-responsive">
+        <table class="table custom-table mb-0">
+            <thead>
+                <tr>
+                    <th>Employé</th>
+                    <th>Période</th>
+                    <th>Salaire de base</th>
+                    <th>Salaire Brut</th>
+                    <th>Déductions Total</th>
+                    <th>Net à Payer</th>
+                    <th>Mode de Paiement</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payslip in payslips %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'employee_detail' payslip.employee.pk %}" class="fw-bold text-dark text-decoration-none">
+                                {{ payslip.employee.full_name }}
+                            </a>
+                            <div class="text-muted fs-8">{{ payslip.employee.registration_number }}</div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ payslip.get_month_display }} {{ payslip.year }}</span></td>
+                        <td>{{ payslip.basic_salary|floatformat:2 }} €</td>
+                        <td class="fw-semibold text-dark">{{ payslip.gross_salary|floatformat:2 }} €</td>
+                        <td class="text-danger">-{{ payslip.tax_deduction|add:payslip.social_security_deduction|add:payslip.other_deductions|floatformat:2 }} €</td>
+                        <td><strong class="text-success fs-6">{{ payslip.net_salary|floatformat:2 }} €</strong></td>
+                        <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ payslip.get_payment_method_display }}</span></td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'payslip_detail' payslip.pk %}" class="btn btn-outline-primary" title="Imprimer Bulletin">
+                                    <i class="fa-solid fa-print me-1"></i> Imprimer
+                                </a>
+                                <a href="{% url 'payslip_edit' payslip.pk %}" class="btn btn-outline-secondary" title="Modifier">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-file-invoice-dollar fs-1 text-muted mb-2 d-block"></i>
+                            Aucun bulletin de paie généré pour cette période.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

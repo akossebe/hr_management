@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Décision Congé - HR Pulse{% endblock %}
+{% block header_title %}Traitement de la Demande de Congé{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'leave_list' %}" class="btn btn-light border text-dark fw-semibold">
+        <i class="fa-solid fa-arrow-left me-2"></i> Retour aux demandes
+    </a>
+</div>
+
+<div class="custom-card p-4" style="max-width: 650px;">
+    <h4 class="fw-bold text-dark mb-4 border-bottom pb-2">
+        <i class="fa-solid fa-user-check me-2 text-primary"></i> Traiter la demande de congé
+    </h4>
+
+    <div class="bg-light p-3 rounded-3 mb-4 border">
+        <div class="row g-2 fs-7">
+            <div class="col-6"><strong>Employé :</strong> {{ object.employee.full_name }}</div>
+            <div class="col-6"><strong>Département :</strong> {{ object.employee.department.name|default:"--" }}</div>
+            <div class="col-6"><strong>Type de congé :</strong> {{ object.leave_type.name }}</div>
+            <div class="col-6"><strong>Durée :</strong> {{ object.duration_days }} jour(s)</div>
+            <div class="col-12"><strong>Période :</strong> du {{ object.start_date|date:"d/m/Y" }} au {{ object.end_date|date:"d/m/Y" }}</div>
+            <div class="col-12 mt-2"><strong>Motif :</strong> <em>"{{ object.reason }}"</em></div>
+        </div>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-semibold fs-7">Décision du Responsable / RH *</label>
+            {{ form.status }}
+        </div>
+        <div class="mb-4">
+            <label class="form-label fw-semibold fs-7">Commentaire / Justification de la décision</label>
+            {{ form.hr_comment }}
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+            <a href="{% url 'leave_list' %}" class="btn btn-light border">Annuler</a>
+            <button type="submit" class="btn btn-success px-4 fw-semibold shadow-sm">Valider la décision</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

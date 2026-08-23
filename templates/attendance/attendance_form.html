@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Enregistrer un Pointage - HR Pulse{% endblock %}
+{% block header_title %}Saisie du Pointage{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'attendance_list' %}" class="btn btn-light border text-dark fw-semibold">
+        <i class="fa-solid fa-arrow-left me-2"></i> Retour aux pointages
+    </a>
+</div>
+
+<div class="custom-card p-4" style="max-width: 600px;">
+    <h4 class="fw-bold text-dark mb-4 border-bottom pb-2">
+        <i class="fa-solid fa-user-clock me-2 text-primary"></i> Nouveau Pointage
+    </h4>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-semibold fs-7">Employé *</label>
+            {{ form.employee }}
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold fs-7">Date *</label>
+            {{ form.date }}
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-6">
+                <label class="form-label fw-semibold fs-7">Heure d'entrée</label>
+                {{ form.time_in }}
+            </div>
+            <div class="col-6">
+                <label class="form-label fw-semibold fs-7">Heure de sortie</label>
+                {{ form.time_out }}
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold fs-7">Statut de la présence *</label>
+            {{ form.status }}
+        </div>
+        <div class="mb-4">
+            <label class="form-label fw-semibold fs-7">Observations / Remarques</label>
+            {{ form.notes }}
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+            <a href="{% url 'attendance_list' %}" class="btn btn-light border">Annuler</a>
+            <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">Enregistrer</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

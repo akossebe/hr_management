@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestion des Employés - HR Pulse{% endblock %}
+{% block header_title %}Répertoire des Employés{% endblock %}
+
+{% block content %}
+<!-- Top Header & Add Button -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold m-0 text-dark">Liste des Employés</h4>
+        <p class="text-muted m-0 fs-7">Gérez les fiches des collaborateurs, leurs contrats et départements</p>
+    </div>
+    <a href="{% url 'employee_add' %}" class="btn btn-primary rounded-3 shadow-sm fw-semibold">
+        <i class="fa-solid fa-user-plus me-2"></i> Ajouter un Employé
+    </a>
+</div>
+
+<!-- Filters & Search Form Card -->
+<div class="custom-card p-3 mb-4">
+    <form method="GET" action="{% url 'employee_list' %}" class="row g-2 align-items-center">
+        <div class="col-12 col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0" placeholder="Nom, matricule, email...">
+            </div>
+        </div>
+
+        <div class="col-12 col-md-3">
+            <select name="department" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Tous les Départements --</option>
+                {% for dept in departments %}
+                    <option value="{{ dept.id }}" {% if selected_dept == dept.id|stringformat:"s" %}selected{% endif %}>
+                        {{ dept.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-12 col-md-2">
+            <select name="status" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Tous les Statuts --</option>
+                <option value="ACTIF" {% if selected_status == 'ACTIF' %}selected{% endif %}>Actif</option>
+                <option value="EN_CONGE" {% if selected_status == 'EN_CONGE' %}selected{% endif %}>En congé</option>
+                <option value="SUSPENDU" {% if selected_status == 'SUSPENDU' %}selected{% endif %}>Suspendu</option>
+                <option value="DEMISSIONNE" {% if selected_status == 'DEMISSIONNE' %}selected{% endif %}>Démissionné</option>
+            </select>
+        </div>
+
+        <div class="col-12 col-md-2">
+            <select name="contract_type" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Contrat --</option>
+                <option value="CDI" {% if selected_contract == 'CDI' %}selected{% endif %}>CDI</option>
+                <option value="CDD" {% if selected_contract == 'CDD' %}selected{% endif %}>CDD</option>
+                <option value="STAGE" {% if selected_contract == 'STAGE' %}selected{% endif %}>Stage</option>
+                <option value="FREELANCE" {% if selected_contract == 'FREELANCE' %}selected{% endif %}>Freelance</option>
+            </select>
+        </div>
+
+        <div class="col-12 col-md-1">
+            <a href="{% url 'employee_list' %}" class="btn btn-light border w-100" title="Réinitialiser les filtres">
+                <i class="fa-solid fa-arrows-rotate"></i>
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Employees Table Card -->
+<div class="custom-card">
+    <div class="table-responsive">
+        <table class="table custom-table mb-0">
+            <thead>
+                <tr>
+                    <th>Employé</th>
+                    <th>Matricule</th>
+                    <th>Poste & Département</th>
+                    <th>Contact</th>
+                    <th>Contrat</th>
+                    <th>Statut</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in employees %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                {% if emp.photo %}
+                                    <img src="{{ emp.photo.url }}" class="avatar-img">
+                                {% else %}
+                                    <div class="avatar-placeholder">
+                                        {{ emp.first_name|first }}{{ emp.last_name|first }}
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <a href="{% url 'employee_detail' emp.pk %}" class="fw-bold text-dark text-decoration-none hover-primary">
+                                        {{ emp.full_name }}
+                                    </a>
+                                    <div class="text-muted fs-8">Embauché le {{ emp.hire_date|date:"d/m/Y" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark font-monospace border">{{ emp.registration_number }}</span></td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ emp.position.title|default:"Non spécifié" }}</div>
+                            <div class="text-muted fs-8">{{ emp.department.name|default:"Sans département" }}</div>
+                        </td>
+                        <td>
+                            <div class="fs-7"><i class="fa-solid fa-envelope text-muted me-1"></i> {{ emp.email }}</div>
+                            <div class="fs-7 text-muted"><i class="fa-solid fa-phone me-1"></i> {{ emp.phone }}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25">
+                                {{ emp.contract_type }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-status badge-{{ emp.status|lower }}">
+                                {{ emp.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'employee_detail' emp.pk %}" class="btn btn-outline-primary" title="Fiche Détaillée">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                                <a href="{% url 'employee_edit' emp.pk %}" class="btn btn-outline-secondary" title="Modifier">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </a>
+                                <a href="{% url 'employee_delete' emp.pk %}" class="btn btn-outline-danger" title="Supprimer">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <i class="fa-solid fa-user-slash fs-1 text-muted mb-3 d-block"></i>
+                            <h6 class="fw-semibold text-muted">Aucun employé trouvé</h6>
+                            <p class="text-muted fs-7">Essayez de modifier vos critères de recherche ou ajoutez un premier employé.</p>
+                            <a href="{% url 'employee_add' %}" class="btn btn-sm btn-primary">Ajouter un employé</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+            <span class="fs-7 text-muted">Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}</span>
+            <ul class="pagination pagination-sm m-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&department={{ selected_dept }}&status={{ selected_status }}">Précédent</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&department={{ selected_dept }}&status={{ selected_status }}">Suivant</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

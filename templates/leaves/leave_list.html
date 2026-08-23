@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestion des Congés - HR Pulse{% endblock %}
+{% block header_title %}Demandes de Congé & Absences{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold m-0 text-dark">Suivi des Congés</h4>
+        <p class="text-muted m-0 fs-7">Validation des absences et solde de congés des collaborateurs</p>
+    </div>
+    <a href="{% url 'leave_add' %}" class="btn btn-primary rounded-3 shadow-sm fw-semibold">
+        <i class="fa-solid fa-calendar-plus me-2"></i> Soumettre une Demande
+    </a>
+</div>
+
+<!-- Leave Stats Badges Bar -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="card-stat">
+            <div>
+                <div class="stat-value text-warning">{{ pending_count }}</div>
+                <div class="stat-label">En attente de validation</div>
+            </div>
+            <div class="stat-icon warning"><i class="fa-solid fa-hourglass-half"></i></div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card-stat">
+            <div>
+                <div class="stat-value text-success">{{ approved_count }}</div>
+                <div class="stat-label">Congés Approuvés</div>
+            </div>
+            <div class="stat-icon success"><i class="fa-solid fa-circle-check"></i></div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card-stat">
+            <div>
+                <div class="stat-value text-danger">{{ rejected_count }}</div>
+                <div class="stat-label">Demandes Refusées</div>
+            </div>
+            <div class="stat-icon primary" style="background:#fee2e2; color:#ef4444;"><i class="fa-solid fa-circle-xmark"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Table Card -->
+<div class="custom-card">
+    <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+        <div class="d-flex gap-2">
+            <a href="{% url 'leave_list' %}" class="btn btn-sm {% if not selected_status %}btn-dark{% else %}btn-light border{% endif %}">Tous</a>
+            <a href="{% url 'leave_list' %}?status=EN_ATTENTE" class="btn btn-sm {% if selected_status == 'EN_ATTENTE' %}btn-warning text-dark{% else %}btn-light border{% endif %}">En attente</a>
+            <a href="{% url 'leave_list' %}?status=APPROUVE" class="btn btn-sm {% if selected_status == 'APPROUVE' %}btn-success{% else %}btn-light border{% endif %}">Approuvés</a>
+            <a href="{% url 'leave_list' %}?status=REFUSE" class="btn btn-sm {% if selected_status == 'REFUSE' %}btn-danger{% else %}btn-light border{% endif %}">Refusés</a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table custom-table mb-0">
+            <thead>
+                <tr>
+                    <th>Employé</th>
+                    <th>Type de congé</th>
+                    <th>Date début</th>
+                    <th>Date fin</th>
+                    <th>Durée</th>
+                    <th>Motif</th>
+                    <th>Statut</th>
+                    <th class="text-end">Décision RH</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for leave in leaves %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'employee_detail' leave.employee.pk %}" class="fw-bold text-dark text-decoration-none">
+                                {{ leave.employee.full_name }}
+                            </a>
+                            <div class="text-muted fs-8">{{ leave.employee.department.name|default:"--" }}</div>
+                        </td>
+                        <td><span class="badge bg-indigo text-white">{{ leave.leave_type.name }}</span></td>
+                        <td>{{ leave.start_date|date:"d/m/Y" }}</td>
+                        <td>{{ leave.end_date|date:"d/m/Y" }}</td>
+                        <td class="fw-bold text-dark">{{ leave.duration_days }} jour(s)</td>
+                        <td class="fs-8 text-muted" style="max-width:200px;">{{ leave.reason }}</td>
+                        <td>
+                            {% if leave.status == 'EN_ATTENTE' %}
+                                <span class="badge bg-warning text-dark px-2 py-1"><i class="fa-solid fa-clock me-1"></i> En attente</span>
+                            {% elif leave.status == 'APPROUVE' %}
+                                <span class="badge bg-success px-2 py-1"><i class="fa-solid fa-check me-1"></i> Approuvé</span>
+                            {% else %}
+                                <span class="badge bg-danger px-2 py-1"><i class="fa-solid fa-xmark me-1"></i> Refusé</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'leave_status' leave.pk %}" class="btn btn-sm btn-outline-primary fw-semibold">
+                                <i class="fa-solid fa-user-check me-1"></i> Traiter
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-calendar-xmark fs-2 mb-2 d-block"></i>
+                            Aucune demande de congé enregistrée.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

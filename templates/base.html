@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HR Pulse - Gestion des Ressources Humaines{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div id="wrapper">
+        <!-- Sidebar Navigation -->
+        <nav id="sidebar" class="no-print">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-users-gear text-primary fs-3"></i>
+                <a href="{% url 'dashboard' %}" class="sidebar-brand">HR Pulse <span class="badge bg-primary fs-6">GRH</span></a>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="menu-category">Général</li>
+                <li>
+                    <a href="{% url 'dashboard' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>Tableau de Bord</span>
+                    </a>
+                </li>
+                
+                <li class="menu-category">Gestion Personnel</li>
+                <li>
+                    <a href="{% url 'employee_list' %}" class="nav-link-custom {% if 'employee' in request.path %}active{% endif %}">
+                        <i class="fa-solid fa-id-card"></i>
+                        <span>Employés</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'department_list' %}" class="nav-link-custom {% if 'department' in request.path %}active{% endif %}">
+                        <i class="fa-solid fa-sitemap"></i>
+                        <span>Départements</span>
+                    </a>
+                </li>
+
+                <li class="menu-category">Gestion Temps & Paie</li>
+                <li>
+                    <a href="{% url 'leave_list' %}" class="nav-link-custom {% if 'leave' in request.path %}active{% endif %}">
+                        <i class="fa-solid fa-calendar-check"></i>
+                        <span>Congés & Absences</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'payslip_list' %}" class="nav-link-custom {% if 'payslip' in request.path %}active{% endif %}">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                        <span>Bulletins de Paie</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'attendance_list' %}" class="nav-link-custom {% if 'attendance' in request.path %}active{% endif %}">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>Pointages & Présence</span>
+                    </a>
+                </li>
+
+                <li class="menu-category">Administration</li>
+                <li>
+                    <a href="/admin/" target="_blank" class="nav-link-custom">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>Admin Django</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <div id="content">
+            <!-- Top Navbar -->
+            <header class="top-navbar no-print">
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-light border-0 d-md-none" id="sidebarToggle">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <h5 class="m-0 fw-bold text-dark">{% block header_title %}Gestion RH{% endblock %}</h5>
+                </div>
+                
+                <div class="d-flex align-items-center gap-4">
+                    <form class="d-none d-md-flex" action="{% url 'employee_list' %}" method="GET">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                            <input type="text" name="q" class="form-control bg-light border-start-0" placeholder="Rechercher un employé...">
+                        </div>
+                    </form>
+
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center gap-2 text-decoration-none dropdown-toggle text-dark" id="userDropdown" data-bs-toggle="dropdown">
+                            <div class="avatar-placeholder bg-indigo" style="width:36px; height:36px; font-size:0.9rem;">
+                                {{ request.user.username|first|upper }}
+                            </div>
+                            <span class="fw-semibold d-none d-md-inline">{{ request.user.username|title }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                            <li><a class="dropdown-item" href="/admin/"><i class="fa-solid fa-user-gear me-2"></i> Administration</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form action="{% url 'logout' %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fa-solid fa-right-from-bracket me-2"></i> Déconnexion
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Body -->
+            <main class="p-4 flex-grow-1">
+                <!-- Flash Messages -->
+                {% if messages %}
+                    <div class="mb-4">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                                {% if message.tags == 'success' %}<i class="fa-solid fa-circle-check me-2"></i>{% endif %}
+                                {% if message.tags == 'warning' %}<i class="fa-solid fa-triangle-exclamation me-2"></i>{% endif %}
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </main>
+
+            <!-- Footer -->
+            <footer class="bg-white border-top py-3 text-center text-muted fs-7 no-print">
+                HR Pulse &copy; 2026 - Plateforme de Gestion des Ressources Humaines Django
+            </footer>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

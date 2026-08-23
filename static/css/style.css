@@ -1,0 +1,306 @@
+/* Modern HR Management System Design System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-color: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-light: #eef2ff;
+    --secondary-color: #0ea5e9;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #6366f1;
+    
+    --dark-bg: #0f172a;
+    --card-bg: #ffffff;
+    --body-bg: #f8fafc;
+    --sidebar-width: 260px;
+    
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--body-bg);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Layout */
+#wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+#sidebar {
+    width: var(--sidebar-width);
+    background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%);
+    color: #ffffff;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.sidebar-header {
+    padding: 1.5rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sidebar-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 1rem 0.75rem;
+    margin: 0;
+}
+
+.menu-category {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 0.75rem 0.75rem 0.25rem;
+    letter-spacing: 0.05em;
+}
+
+.nav-link-custom {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.nav-link-custom:hover, .nav-link-custom.active {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+.nav-link-custom.active {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+}
+
+.nav-link-custom i {
+    font-size: 1.1rem;
+    width: 24px;
+    text-align: center;
+}
+
+#content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* Navbar */
+.top-navbar {
+    background: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.85rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Glassmorphism Cards & Metric Boxes */
+.card-stat {
+    background: #ffffff;
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-icon.primary { background: var(--primary-light); color: var(--primary-color); }
+.stat-icon.success { background: #d1fae5; color: var(--success-color); }
+.stat-icon.warning { background: #fef3c7; color: var(--warning-color); }
+.stat-icon.info { background: #e0f2fe; color: var(--secondary-color); }
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Custom Table Styles */
+.custom-card {
+    background: #ffffff;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.custom-table {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.custom-table th {
+    background: #f8fafc;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.custom-table td {
+    padding: 1rem 1.25rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+.custom-table tbody tr:hover {
+    background-color: #f1f5f9;
+}
+
+/* Employee Avatar & Badges */
+.avatar-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffffff;
+    box-shadow: var(--shadow-sm);
+}
+
+.avatar-placeholder {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: white;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.badge-status {
+    padding: 0.35rem 0.75rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.badge-actif { background: #d1fae5; color: #047857; }
+.badge-conge { background: #fef3c7; color: #b45309; }
+.badge-suspendu { background: #fee2e2; color: #b91c1c; }
+
+/* Employee Detailed Profile Card */
+.profile-header-card {
+    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+    color: #ffffff;
+    border-radius: var(--radius-md);
+    padding: 2.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-md);
+}
+
+.profile-avatar-lg {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, 0.8);
+    object-fit: cover;
+}
+
+.profile-avatar-placeholder-lg {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 2.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Printable Payslip Styling */
+.payslip-container {
+    background: #ffffff;
+    border: 2px solid #1e293b;
+    border-radius: var(--radius-sm);
+    padding: 2.5rem;
+    max-width: 800px;
+    margin: 0 auto;
+    color: #000;
+}
+
+@media print {
+    #sidebar, .top-navbar, .no-print {
+        display: none !important;
+    }
+    #content {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .payslip-container, .employee-badge-print {
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+    }
+}

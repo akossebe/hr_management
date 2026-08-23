@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Bulletin de Paie - {{ payslip.employee.full_name }} - {{ payslip.get_month_display }} {{ payslip.year }}{% endblock %}
+{% block header_title %}Bulletin de Salaire Officiel{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4 no-print">
+    <a href="{% url 'payslip_list' %}" class="btn btn-light border text-dark fw-semibold">
+        <i class="fa-solid fa-arrow-left me-2"></i> Retour aux bulletins
+    </a>
+    <button onclick="window.print()" class="btn btn-primary fw-semibold shadow-sm">
+        <i class="fa-solid fa-print me-2"></i> Imprimer / Exporter PDF
+    </button>
+</div>
+
+<!-- Official Payslip Layout Container -->
+<div class="payslip-container shadow-sm rounded-3">
+    <!-- Header Company & Document Title -->
+    <div class="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+        <div>
+            <h3 class="fw-bold text-dark m-0"><i class="fa-solid fa-building me-2 text-primary"></i>ENTREPRISE HR PULSE SAS</h3>
+            <div class="fs-7 text-muted">100 Avenue des Ressources Humaines, 75008 Paris</div>
+            <div class="fs-7 text-muted">SIRET : 890 123 456 00012 | Code NAF : 7022Z</div>
+        </div>
+        <div class="text-end">
+            <h4 class="fw-bold text-primary m-0">BULLETIN DE PAIE</h4>
+            <div class="badge bg-dark font-monospace fs-6 mt-1">PÉRIODE : {{ payslip.get_month_display|upper }} {{ payslip.year }}</div>
+        </div>
+    </div>
+
+    <!-- Employee & Contract Summary Boxes -->
+    <div class="row g-4 mb-4">
+        <div class="col-6">
+            <div class="bg-light p-3 rounded-3 border">
+                <h6 class="fw-bold text-dark border-bottom pb-1 mb-2 fs-7 text-uppercase">Informations Salarié</h6>
+                <div class="fs-7"><strong>Nom & Prénom :</strong> {{ payslip.employee.full_name }}</div>
+                <div class="fs-7"><strong>Matricule :</strong> {{ payslip.employee.registration_number }}</div>
+                <div class="fs-7"><strong>Adresse :</strong> {{ payslip.employee.address|default:"12 Rue de la Paix" }}</div>
+            </div>
+        </div>
+
+        <div class="col-6">
+            <div class="bg-light p-3 rounded-3 border">
+                <h6 class="fw-bold text-dark border-bottom pb-1 mb-2 fs-7 text-uppercase">Emploi & Contrat</h6>
+                <div class="fs-7"><strong>Poste :</strong> {{ payslip.employee.position.title|default:"Cadre RH" }}</div>
+                <div class="fs-7"><strong>Département :</strong> {{ payslip.employee.department.name|default:"General" }}</div>
+                <div class="fs-7"><strong>Date d'embauche :</strong> {{ payslip.employee.hire_date|date:"d/m/Y" }}</div>
+                <div class="fs-7"><strong>Type de contrat :</strong> {{ payslip.employee.contract_type }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Earnings and Deductions Table -->
+    <table class="table table-bordered mb-4 fs-7 align-middle">
+        <thead class="table-light text-uppercase">
+            <tr>
+                <th>Rubrique / Désignation</th>
+                <th class="text-end">Base / Gains (€)</th>
+                <th class="text-end">Retenues / Déductions (€)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Salaire de base</td>
+                <td class="text-end fw-semibold">{{ payslip.basic_salary|floatformat:2 }}</td>
+                <td class="text-end text-muted">-</td>
+            </tr>
+            {% if payslip.transport_allowance > 0 %}
+                <tr>
+                    <td>Prime de transport</td>
+                    <td class="text-end">{{ payslip.transport_allowance|floatformat:2 }}</td>
+                    <td class="text-end text-muted">-</td>
+                </tr>
+            {% endif %}
+            {% if payslip.housing_allowance > 0 %}
+                <tr>
+                    <td>Indemnité de logement</td>
+                    <td class="text-end">{{ payslip.housing_allowance|floatformat:2 }}</td>
+                    <td class="text-end text-muted">-</td>
+                </tr>
+            {% endif %}
+            {% if payslip.performance_bonus > 0 %}
+                <tr>
+                    <td>Prime exceptionnelle de performance</td>
+                    <td class="text-end fw-semibold text-success">+{{ payslip.performance_bonus|floatformat:2 }}</td>
+                    <td class="text-end text-muted">-</td>
+                </tr>
+            {% endif %}
+
+            <!-- Deductions -->
+            <tr>
+                <td class="text-muted">Impôt sur le Revenu (IRPP)</td>
+                <td class="text-end text-muted">-</td>
+                <td class="text-end text-danger">-{{ payslip.tax_deduction|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td class="text-muted">Cotisations Sécurité Sociale (CNSS / Retraite)</td>
+                <td class="text-end text-muted">-</td>
+                <td class="text-end text-danger">-{{ payslip.social_security_deduction|floatformat:2 }}</td>
+            </tr>
+            {% if payslip.other_deductions > 0 %}
+                <tr>
+                    <td class="text-muted">Autres retenues sur salaire</td>
+                    <td class="text-end text-muted">-</td>
+                    <td class="text-end text-danger">-{{ payslip.other_deductions|floatformat:2 }}</td>
+                </tr>
+            {% endif %}
+        </tbody>
+        <tfoot class="table-group-divider">
+            <tr class="fw-bold">
+                <td>TOTAL BRUT & DÉDUCTIONS</td>
+                <td class="text-end text-dark fs-6">{{ payslip.gross_salary|floatformat:2 }} €</td>
+                <td class="text-end text-danger fs-6">
+                    -{{ payslip.tax_deduction|add:payslip.social_security_deduction|add:payslip.other_deductions|floatformat:2 }} €
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- Total Net Salary Highlight Box -->
+    <div class="row align-items-center bg-primary text-white p-3 rounded-3 mb-4 g-2">
+        <div class="col-7">
+            <h5 class="fw-bold m-0 text-uppercase">NET À PAYER AVANT IMPÔT SUR LE REVENU</h5>
+            <div class="fs-8 text-white-75">Payé le {{ payslip.payment_date|date:"d/m/Y"|default:"30 courant" }} par {{ payslip.get_payment_method_display }}</div>
+        </div>
+        <div class="col-5 text-end">
+            <div class="display-6 fw-bold">{{ payslip.net_salary|floatformat:2 }} €</div>
+        </div>
+    </div>
+
+    <!-- Legal Notes & Signatures -->
+    <div class="row pt-3 text-muted fs-8 border-top">
+        <div class="col-6">
+            <p class="m-0"><em>Pour vous aider à faire valoir vos droits, conservez ce bulletin de paie sans limitation de durée.</em></p>
+        </div>
+        <div class="col-6 text-end">
+            <div class="fw-bold text-dark">La Direction des Ressources Humaines</div>
+            <div class="mt-4 text-decoration-underline">Cachet & Signature</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
